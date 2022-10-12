@@ -1,6 +1,6 @@
 use log::{info, error, debug, warn};
 use std::io::{Result as IoResult, ErrorKind as IoErrorKind, Read, Write, Cursor};
-use clap::{Arg, Command, ArgAction};
+use clap::{Arg, Command, ArgAction, value_parser};
 use sdl2::pixels::{Color, PixelMasks, PixelFormatEnum as SdlPixelFormat};
 use sdl2::rect::Rect as SdlRect;
 use byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
@@ -137,6 +137,7 @@ fn main() {
                 .index(1))
         .arg(Arg::new("PORT")
                 .help("server port")
+                .value_parser(value_parser!(u16))
                 .default_value("5900")
                 .index(2))
         .arg(Arg::new("USERNAME")
@@ -161,7 +162,7 @@ fn main() {
                 .long("heinous-qemu-hacks"))
         .get_matches();
 
-    let host = matches.get_one::<&str>("HOST").unwrap().clone();
+    let host = matches.get_one::<String>("HOST").unwrap().clone();
     let port = matches.get_one::<u16>("PORT").unwrap().clone();
     let username = matches.get_one::<String>("USERNAME");
     let password = matches.get_one::<String>("PASSWORD");
@@ -176,7 +177,7 @@ fn main() {
 
     info!("connecting to {}:{}", host, port);
     let stream =
-        match std::net::TcpStream::connect((host, port)) {
+        match std::net::TcpStream::connect((&*host, port)) {
             Ok(stream) => stream,
             Err(error) => {
                 error!("cannot connect to {}:{}: {}", host, port, error);
@@ -254,7 +255,7 @@ fn main() {
         ]).unwrap()
     }
 
-    let window = sdl_video.window(&format!("{} - {}:{} - RVNC", vnc.name(), host, port),
+    let window = sdl_video.window(&format!("{} - {}:{} - RVNC", vnc.name(), &host, port),
                                   width as u32, height as u32).build().unwrap();
     sdl_video.text_input().start();
 
