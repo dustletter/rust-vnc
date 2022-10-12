@@ -17,12 +17,12 @@ name = "rvncclient"
 path = "main.rs"
 
 [dependencies]
-byteorder = "0.5"
-log = "0.4"
+log = "0.4.17"
+byteorder = "1.4.3"
 env_logger = "0.7"
-clap = "*"
-sdl2 = "0.13"
-x11 = "2.3"
+clap = "4.0"
+sdl2 = "0.35"
+x11 = "2.20"
 
 [dependencies.vnc]
 path = ".."
