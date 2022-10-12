@@ -1,6 +1,6 @@
 use log::{info, error, debug, warn};
 use std::io::{Result as IoResult, ErrorKind as IoErrorKind, Read, Write, Cursor};
-use clap::{Arg, App, value_t};
+use clap::{Arg, Command, ArgAction};
 use sdl2::pixels::{Color, PixelMasks, PixelFormatEnum as SdlPixelFormat};
 use sdl2::rect::Rect as SdlRect;
 use byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
@@ -130,41 +130,45 @@ fn mask_cursor(vnc_in_format: vnc::PixelFormat, in_pixels: Vec<u8>, mask_pixels:
 fn main() {
     env_logger::init();
 
-    let matches = App::new("rvncclient")
+    let matches = Command::new("rvncclient")
         .about("VNC client")
-        .arg(Arg::with_name("HOST")
+        .arg(Arg::new("HOST")
                 .help("server hostname or IP")
                 .required(true)
                 .index(1))
-        .arg(Arg::with_name("PORT")
-                .help("server port (default: 5900)")
+        .arg(Arg::new("PORT")
+                .help("server port")
+                .default_value("5900")
                 .index(2))
-        .arg(Arg::with_name("USERNAME")
+        .arg(Arg::new("USERNAME")
                 .help("server username")
                 .long("username")
-                .takes_value(true))
-        .arg(Arg::with_name("PASSWORD")
+                .action(ArgAction::Set))
+        .arg(Arg::new("PASSWORD")
                 .help("server password")
                 .long("password")
-                .takes_value(true))
-        .arg(Arg::with_name("EXCLUSIVE")
+                .action(ArgAction::Set))
+        .arg(Arg::new("EXCLUSIVE")
                 .help("request a non-shared session")
+                .action(ArgAction::SetTrue)
                 .long("exclusive"))
-        .arg(Arg::with_name("VIEW-ONLY")
+        .arg(Arg::new("VIEW-ONLY")
                 .help("ignore any input")
+                .action(ArgAction::SetTrue)
                 .long("view-only"))
-        .arg(Arg::with_name("QEMU-HACKS")
+        .arg(Arg::new("QEMU-HACKS")
                 .help("hack around QEMU/XenHVM's braindead VNC server")
+                .action(ArgAction::SetTrue)
                 .long("heinous-qemu-hacks"))
         .get_matches();
 
-    let host = matches.value_of("HOST").unwrap();
-    let port = value_t!(matches.value_of("PORT"), u16).unwrap_or(5900);
-    let username = matches.value_of("USERNAME");
-    let password = matches.value_of("PASSWORD");
-    let exclusive = matches.is_present("EXCLUSIVE");
-    let view_only = matches.is_present("VIEW-ONLY");
-    let qemu_hacks = matches.is_present("QEMU-HACKS");
+    let host = matches.get_one::<&str>("HOST").unwrap().clone();
+    let port = matches.get_one::<u16>("PORT").unwrap().clone();
+    let username = matches.get_one::<String>("USERNAME");
+    let password = matches.get_one::<String>("PASSWORD");
+    let exclusive = matches.get_one::<bool>("EXCLUSIVE").unwrap().clone();
+    let view_only = matches.get_one::<bool>("VIEW-ONLY").unwrap().clone();
+    let qemu_hacks = matches.get_one::<bool>("QEMU-HACKS").unwrap().clone();
 
     let sdl_context = sdl2::init().unwrap();
     let sdl_video = sdl_context.video().unwrap();
