@@ -25,7 +25,7 @@ impl<'a> Read for ZlibReader<'a> {
     fn read(&mut self, output: &mut [u8]) -> std::io::Result<usize> {
         let in_before  = self.decompressor.total_in();
         let out_before = self.decompressor.total_out();
-        let result = self.decompressor.decompress(self.input, output, flate2::Flush::None);
+        let result = self.decompressor.decompress(self.input, output, flate2::FlushDecompress::None);
         let consumed = (self.decompressor.total_in()  - in_before) as usize;
         let produced = (self.decompressor.total_out() - out_before) as usize;
 
