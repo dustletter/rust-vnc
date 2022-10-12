@@ -8,7 +8,7 @@ use crate::{zrle, protocol, Rect, Colour, Error, Result};
 use protocol::Message;
 use crate::security::des;
 #[cfg(feature = "apple-auth")]
-use security::apple_auth;
+use crate::security::apple_auth;
 
 #[derive(Debug)]
 #[non_exhaustive]
